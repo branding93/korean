@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한 단어 · Una palabra coreana</title>
+<style>
+  :root{
+    --rojo:#CD2E3A;
+    --rojo-hover:#A8262F;
+    --azul:#0047A0;
+    --azul-hover:#00347A;
+    --blanco:#FFFFFF;
+    --negro:#000000;
+    --texto:#14181F;
+    --texto-suave:#5A6270;
+    --borde:#E2E6EC;
+    --borde-fuerte:#C9D0DA;
+    --fondo:#F7F9FC;
+    --rojo-suave:#FBECEE;
+    --azul-suave:#EAF1F9;
+    --radio:16px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  body{
+    min-height:100vh;
+    background:var(--blanco);
+    color:var(--texto);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .barra{
+    height:4px;
+    background:linear-gradient(90deg,var(--rojo) 0%,var(--rojo) 50%,var(--azul) 50%,var(--azul) 100%);
+  }
+
+  .envoltorio{
+    max-width:860px;
+    margin:0 auto;
+    padding:28px 20px 48px;
+  }
+
+  /* ---------- Encabezado ---------- */
+  .cabecera{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:24px;
+  }
+
+  .titulo{
+    display:flex;
+    align-items:center;
+    gap:11px;
+  }
+
+  .titulo h1{
+    font-size:1.45rem;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    white-space:nowrap;
+  }
+
+  .titulo .sub{
+    display:block;
+    font-size:0.82rem;
+    font-weight:400;
+    color:var(--texto-suave);
+    letter-spacing:0;
+  }
+
+  /* ---------- Taegeuk ---------- */
+  .taegeuk{
+    position:relative;
+    width:30px;
+    height:30px;
+    flex:none;
+    border-radius:50%;
+    background:conic-gradient(from -90deg,var(--rojo) 0deg 180deg,var(--azul) 180deg 360deg);
+    overflow:hidden;
+  }
+  .taegeuk::before,
+  .taegeuk::after{
+    content:"";
+    position:absolute;
+    width:15px;
+    height:15px;
+    border-radius:50%;
+  }
+  .taegeuk::before{top:0;left:7.5px;background:var(--rojo)}
+  .taegeuk::after{bottom:0;left:7.5px;background:var(--azul)}
+
+  /* ---------- Marcador ---------- */
+  .marcador{
+    margin-left:auto;
+    display:flex;
+    gap:8px;
+  }
+  .pastilla{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid var(--borde);
+    border-radius:999px;
+    padding:5px 13px;
+    font-size:0.83rem;
+    font-weight:600;
+    background:var(--blanco);
+    white-space:nowrap;
+  }
+  .pastilla .pt{
+    width:8px;height:8px;border-radius:50%;
+  }
+  .pastilla.acierto .pt{background:var(--azul)}
+  .pastilla.fallo .pt{background:var(--rojo)}
+  .pastilla .n{
+    font-variant-numeric:tabular-nums;
+    color:var(--texto-suave);
+    font-weight:700;
+  }
+
+  /* ---------- Filtros ---------- */
+  .filtros{
+    display:flex;
+    gap:8px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    padding-bottom:8px;
+    margin-bottom:24px;
+    scrollbar-width:thin;
+  }
+  .filtros::-webkit-scrollbar{height:6px}
+  .filtros::-webkit-scrollbar-thumb{background:var(--borde-fuerte);border-radius:3px}
+
+  .chip{
+    flex:none;
+    border:1px solid var(--borde);
+    background:var(--blanco);
+    color:var(--texto-suave);
+    border-radius:999px;
+    padding:7px 15px;
+    font:inherit;
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .chip:hover{background:var(--fondo);border-color:var(--borde-fuerte);color:var(--texto)}
+  .chip[aria-pressed="true"]{
+    background:var(--azul);
+    border-color:var(--azul);
+    color:var(--blanco);
+  }
+
+  /* ---------- Tarjeta ---------- */
+  .tarjeta{
+    position:relative;
+    border:1px solid var(--borde);
+    border-radius:var(--radio);
+    padding:34px 30px 30px;
+    text-align:center;
+    background:var(--blanco);
+    box-shadow:0 1px 2px rgba(0,71,160,.04),0 12px 32px -18px rgba(0,71,160,.28);
+    overflow:hidden;
+    min-height:352px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:0;
+  }
+  .tarjeta::before{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:5px;
+    background:linear-gradient(180deg,var(--rojo) 0%,var(--rojo) 45%,var(--azul) 55%,var(--azul) 100%);
+  }
+
+  .categoria{
+    display:inline-block;
+    background:var(--azul);
+    color:var(--blanco);
+    border-radius:999px;
+    padding:5px 14px;
+    font-size:0.68rem;
+    font-weight:700;
+    letter-spacing:0.13em;
+    text-transform:uppercase;
+    margin-bottom:26px;
+  }
+
+  .hangul{
+    font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR","Nanum Gothic","Segoe UI",sans-serif;
+    font-size:4.4rem;
+    font-weight:700;
+    line-height:1.18;
+    letter-spacing:0.01em;
+    color:var(--texto);
+    word-break:keep-all;
+  }
+
+  .romanizacion{
+    margin-top:14px;
+    font-size:1.55rem;
+    font-weight:600;
+    color:var(--azul);
+    letter-spacing:0.01em;
+  }
+
+  .silabas{
+    margin-top:8px;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    font-size:0.95rem;
+    color:var(--texto-suave);
+    letter-spacing:0.04em;
+  }
+
+  .trigramas{
+    margin:26px 0;
+    color:var(--negro);
+    opacity:.1;
+    font-size:1.05rem;
+    letter-spacing:0.5em;
+    text-indent:0.5em;
+  }
+
+  .traduccion{
+    font-size:2.35rem;
+    font-weight:700;
+    color:var(--texto);
+    animation:aparecer .28s ease both;
+  }
+  .traduccion[hidden]{display:none}
+
+  @keyframes aparecer{
+    from{opacity:0;transform:translateY(-7px)}
+    to{opacity:1;transform:none}
+  }
+
+  /* ---------- Botones ---------- */
+  .acciones{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:22px;
+    flex-wrap:wrap;
+  }
+
+  button{font:inherit}
+
+  .btn{
+    border:1px solid transparent;
+    border-radius:11px;
+    padding:13px 24px;
+    font-size:0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .btn:focus-visible{
+    outline:3px solid rgba(0,71,160,.35);
+    outline-offset:2px;
+  }
+
+  .btn-azul{background:var(--azul);color:var(--blanco)}
+  .btn-azul:hover{background:var(--azul-hover)}
+
+  .btn-rojo{background:var(--rojo);color:var(--blanco)}
+  .btn-rojo:hover{background:var(--rojo-hover)}
+
+  .btn-linea{
+    background:var(--blanco);
+    border-color:var(--borde-fuerte);
+    color:var(--texto);
+  }
+  .btn-linea:hover{background:var(--fondo);border-color:var(--texto-suave)}
+
+  .btn-eval{
+    background:var(--blanco);
+    padding:11px 20px;
+    font-size:0.88rem;
+  }
+  .btn-acierto{
+    border-color:var(--azul);
+    color:var(--azul);
+  }
+  .btn-acierto:hover{background:var(--azul);color:var(--blanco)}
+  .btn-fallo{
+    border-color:var(--rojo);
+    color:var(--rojo);
+  }
+  .btn-fallo:hover{background:var(--rojo);color:var(--blanco)}
+
+  .evaluacion{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:14px;
+    flex-wrap:wrap;
+  }
+  .evaluacion[hidden]{display:none}
+
+  .pista{
+    text-align:center;
+    margin-top:20px;
+    font-size:0.8rem;
+    color:var(--texto-suave);
+  }
+  .pista kbd{
+    font-family:inherit;
+    font-size:0.74rem;
+    background:var(--fondo);
+    border:1px solid var(--borde);
+    border-bottom-width:2px;
+    border-radius:5px;
+    padding:1px 6px;
+    color:var(--texto);
+  }
+
+  .pie{
+    text-align:center;
+    margin-top:38px;
+    font-size:0.76rem;
+    color:var(--texto-suave);
+  }
+  .pie .gwae{
+    display:block;
+    margin-bottom:8px;
+    color:var(--negro);
+    opacity:.12;
+    letter-spacing:0.7em;
+    text-indent:0.7em;
+  }
+
+  @media (max-width:560px){
+    .envoltorio{padding:20px 14px 36px}
+    .hangul{font-size:3.1rem}
+    .romanizacion{font-size:1.25rem}
+    .traduccion{font-size:1.75rem}
+    .marcador{margin-left:0;width:100%}
+    .tarjeta{padding:28px 20px 26px}
+    .acciones .btn{flex:1 1 100%}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="barra"></div>
+
+<div class="envoltorio">
+  <header class="cabecera">
+    <div class="titulo">
+      <div class="taegeuk" aria-hidden="true"></div>
+      <h1>한 단어<span class="sub">Una palabra coreana · nivel A1</span></h1>
+    </div>
+    <div class="marcador">
+      <div class="pastilla acierto"><span class="pt"></span>Acertadas <span class="n" id="aciertos">0</span></div>
+      <div class="pastilla fallo"><span class="pt"></span>Falladas <span class="n" id="fallos">0</span></div>
+    </div>
+  </header>
+
+  <nav class="filtros" id="filtros" aria-label="Categorías"></nav>
+
+  <main class="tarjeta" id="tarjeta">
+    <span class="categoria" id="categoria">saludos</span>
+    <div class="hangul" id="hangul">안녕하세요</div>
+    <div class="romanizacion" id="romanizacion">annyeonghaseyo</div>
+    <div class="silabas" id="silabas">an · nyeong · ha · se · yo</div>
+    <div class="trigramas" aria-hidden="true">☰ ☱ ☲ ☳</div>
+    <div class="traduccion" id="traduccion" hidden>Hola</div>
+  </main>
+
+  <div class="acciones">
+    <button class="btn btn-azul" id="btnNueva">✦&nbsp; Palabra nueva</button>
+    <button class="btn btn-rojo" id="btnTraducir">Mostrar traducción</button>
+  </div>
+
+  <div class="evaluacion" id="evaluacion" hidden>
+    <button class="btn btn-linea btn-eval btn-acierto" id="btnSi">Lo sabía ✓</button>
+    <button class="btn btn-linea btn-eval btn-fallo" id="btnNo">No lo sabía ✗</button>
+  </div>
+
+  <p class="pista"><kbd>Espacio</kbd> palabra nueva &nbsp;·&nbsp; <kbd>Enter</kbd> traducción</p>
+
+  <footer class="pie">
+    <span class="gwae" aria-hidden="true">☰ ☱ ☲ ☳</span>
+    한 단어 · Vocabulario coreano A1
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   Datos: [hangul, romanización RR, sílabas, español]
+   ============================================================ */
+
+const CATEGORIAS = [
+  ["saludos",     "Saludos"],
+  ["familia",     "Familia"],
+  ["comida",      "Comida y bebida"],
+  ["casa",        "Casa"],
+  ["escuela",     "Escuela"],
+  ["trabajo",     "Trabajo"],
+  ["tiempo",      "Tiempo"],
+  ["cuerpo",      "Cuerpo"],
+  ["ropa",        "Ropa"],
+  ["numeros",     "Números y colores"],
+  ["viajes",      "Viajes y lugares"],
+  ["verbos",      "Verbos"],
+  ["adjetivos",   "Adjetivos"]
+];
+
+const PALABRAS = {
+  saludos: [
+    ["안녕하세요","annyeonghaseyo","an · nyeong · ha · se · yo","Hola"],
+    ["감사합니다","gamsahamnida","gam · sa · ham · ni · da","Gracias (formal)"],
+    ["안녕히 가세요","annyeonghi gaseyo","an · nyeong · hi · ga · se · yo","Hasta luego"],
+    ["다시 만나요","dasi manayo","da · si · ma · na · yo","Hasta luego (al volver)"],
+    ["반갑습니다","bangapseumnida","ban · gap · seum · ni · da","Encantado de conocerte"],
+    ["처음 뵙겠습니다","cheoeum boepgetseumnida","cheo · eum · boep · get · seum · ni · da","Primera vez que nos vemos"],
+    ["잘 부탁드립니다","jal butakdeurimnida","jal · bu · tak · deu · rim · ni · da","Por favor, cuídame"],
+    ["죄송합니다","joesonghamnida","joe · song · ham · ni · da","Lo siento"],
+    ["안녕","annyeong","an · nyeong","Hola (informal)"],
+    ["감사해요","gamsahaeyo","gam · sa · hae · yo","Gracias (informal)"],
+    ["죄송해요","joesonghaeyo","joe · song · hae · yo","Perdón"],
+    ["안녕히 계세요","annyeonghi gyeseyo","an · nyeong · hi · gye · se · yo","Hasta luego (al irse)"],
+    ["여보세요","yeoboseyo","yeo · bo · se · yo","Sí? (al teléfono)"]
+  ],
+  familia: [
+    ["가족","gajok","ga · jok","Familia"],
+    ["아버지","abeoji","a · beo · ji","Padre"],
+    ["어머니","eomeoni","eo · meo · ni","Madre"],
+    ["아빠","appa","ap · pa","Papá"],
+    ["엄마","eomma","eom · ma","Mamá"],
+    ["아내","anae","a · nae","Esposa"],
+    ["남편","nampyeon","nam · pyeon","Marido"],
+    ["아들","adeul","a · deul","Hijo"],
+    ["딸","ddal","ddal","Hija"],
+    ["형","hyeong","hyeong","Hermano mayor"],
+    ["오빠","oppa","op · pa","Hermano mayor (habla una mujer)"],
+    ["누나","nuna","nu · na","Hermana mayor"],
+    ["언니","eonni","eon · ni","Hermana mayor (habla una mujer)"],
+    ["동생","dongsaeng","dong · saeng","Hermano o hermana menor"],
+    ["할아버지","harabeoji","ha · ra · beo · ji","Abuelo"],
+    ["할머니","halmeoni","hal · meo · ni","Abuela"]
+  ],
+  comida: [
+    ["물","mul","mul","Agua"],
+    ["밥","bap","bap","Comida, arroz"],
+    ["김치","gimchi","gim · chi","Kimchi"],
+    ["비빔밥","bibimbap","bi · bim · bap","Bibimbap"],
+    ["불고기","bulgogi","bul · go · gi","Bulgogi"],
+    ["된장","doenjang","doen · jang","Pasta de soja fermentada"],
+    ["고기","gogi","go · gi","Carne"],
+    ["소고기","sogogi","so · go · gi","Carne de ternera"],
+    ["돼지고기","dwaejgogi","dwae · j · go · gi","Cerdo"],
+    ["닭","dok","dok","Pollo"],
+    ["계란","gyeran","gye · ran","Huevo"],
+    ["채소","chaesos","chae · so","Verdura"],
+    ["과일","gwail","gwa · il","Fruta"],
+    ["사과","sagwa","sag · wa","Manzana"],
+    ["배","bae","bae","Pera"],
+    ["포도","podo","po · do","Uva"],
+    ["딸기","ddalgi","ddal · gi","Fresa"],
+    ["바나나","banana","ba · na · na","Plátano"],
+    ["감자","gamja","gam · ja","Patata"],
+    ["고추","gochu","go · chu","Chile"],
+    ["양파","yangpa","yang · pa","Cebolla"],
+    ["국","guk","guk","Sopa"],
+    ["찌개","jjigae","jji · gae","Guiso, sopa coreana"],
+    ["라면","ramyeon","ra · myeon","Fideos instantáneos"],
+    ["반찬","banchan","ban · chan","Guarnición"],
+    ["요리","yori","yo · ri","Cocina, comida"],
+    ["정식","jeongsik","jeong · sik","Plato del día"],
+    ["과자","gwaja","gwa · ja","Tentempié"],
+    ["케이크","keikeu","kei · keu","Pastel"],
+    ["커피","keopi","keo · pi","Café"],
+    ["차","cha","cha","Té"],
+    ["주스","juseu","ju · seu","Zumo"],
+    ["우유","uyu","u · yu","Leche"],
+    ["설탕","seoltang","seol · tang","Azúcar"],
+    ["소금","sogum","so · geum","Sal"],
+    ["가루","garu","ga · ru","Harina"]
+  ],
+  casa: [
+    ["집","jip","jip","Casa"],
+    ["방","bang","bang","Habitación"],
+    ["부엌","bueok","bu · eok","Cocina"],
+    ["욕실","yoksil","yok · sil","Baño"],
+    ["화장실","hwajangsil","hwa · jang · sil","Aseo"],
+    ["거실","geosil","ge · sil","Salón"],
+    ["침대","chimdae","chim · dae","Cama"],
+    ["의자","uija","ui · ja","Silla"],
+    ["책상","chaeksang","chaek · sang","Escritorio"],
+    ["문","mun","mun","Puerta"],
+    ["창","chang","chang","Ventana"],
+    ["거울","geoul","ge · ul","Espejo"],
+    ["시계","sigye","si · gye","Reloj"],
+    ["냉장고","naengjanggo","naeng · jang · go","Nevera"],
+    ["선반","seonban","seon · ban","Estante"],
+    ["화분","hwabun","hwa · bun","Planta"],
+    ["그림","geurim","geu · rim","Cuadro"],
+    ["텔레비전","tellebijeon","te · le · bi · jeon","Televisor"],
+    ["세탁기","setakgi","se · tak · gi","Lavadora"],
+    ["에어컨","ehyeokeon","e · hyeo · keon","Aire acondicionado"],
+    ["수건","sugeon","su · geon","Toalla"],
+    ["비누","binu","bi · nu","Jabón"],
+    ["칫솔","chitsol","chit · sol","Cepillo de dientes"],
+    ["청소","cheongso","cheong · so","Limpieza"],
+    ["쓰레기","sseuregi","sseu · re · gi","Basura"],
+    ["아이","ai","a · i","Niño"]
+  ],
+  escuela: [
+    ["학교","hakgyo","hak · gyo","Escuela"],
+    ["학생","haksaeng","hak · saeng","Estudiante"],
+    ["선생님","seonsaengnim","seon · saeng · nim","Profesor, profesora"],
+    ["교실","gyosil","gyo · sil","Aula"],
+    ["수업","sueop","su · eop","Clase"],
+    ["공부","gongbu","gong · bu","Estudio"],
+    ["시험","siheom","si · heom","Examen"],
+    ["숙제","sukje","suk · je","Tarea"],
+    ["책","chaek","chaek","Libro"],
+    ["공책","gongchaek","gong · chaek","Cuaderno"],
+    ["연필","yeonpen","yeon · pen","Lápiz"],
+    ["볼펜","bolpen","bol · pen","Bolígrafo"],
+    ["지우개","jiu-gae","jiu · gae","Goma"],
+    ["가방","gabang","ga · bang","Mochila"],
+    ["교과서","gyogwaseo","gyo · gwa · seo","Libro de texto"],
+    ["국어","guk-eo","guk · eo","Lengua coreana"],
+    ["수학","suhang","su · hang","Matemáticas"],
+    ["영어","yeong-eo","yeong · eo","Inglés"],
+    ["과학","gwahak","gwa · hak","Ciencia"],
+    ["역사","yeoksa","yeok · sa","Historia"],
+    ["지리","jiri","ji · ri","Geografía"],
+    ["도서관","doseogwan","do · seo · gwan","Biblioteca"],
+    ["박물관","bangmulgwan","bang · mul · gwan","Museo"],
+    ["방학","banghak","bang · hak","Vacaciones escolares"]
+  ],
+  trabajo: [
+    ["일","il","il","Trabajo"],
+    ["회사","hoesa","hoe · sa","Empresa"],
+    ["직장","jikjang","jik · jang","Lugar de trabajo"],
+    ["직원","jigwon","jig · won","Empleado"],
+    ["사장","sajang","sa · jang","Director"],
+    ["손님","sonnim","son · nim","Cliente"],
+    ["약속","yaksok","yak · sok","Cita"],
+    ["회의","hoeui","hoe · ui","Reunión"],
+    ["보고서","bogoseo","bo · go · seo","Informe"],
+    ["컴퓨터","keompyuteo","keom · pyu · teo","Ordenador"],
+    ["전화","jeonhwa","jeon · hwa","Teléfono"],
+    ["이메일","imeil","i · meil","Correo electrónico"],
+    ["월급","wolgeup","wol · geup","Salario"],
+    ["출근","chulgeun","chul · geun","Llegar al trabajo"],
+    ["퇴근","toegeun","toe · geun","Salir del trabajo"],
+    ["쉬다","swida","swi · da","Descansar"]
+  ],
+  tiempo: [
+    ["시간","sigan","si · gan","Hora, tiempo"],
+    ["오늘","oneul","o · neul","Hoy"],
+    ["어제","eoje","eo · je","Ayer"],
+    ["내일","naeil","na · il","Mañana"],
+    ["지금","jigeum","ji · geum","Ahora"],
+    ["하루","haru","ha · ru","Un día"],
+    ["년","nyeon","nyeon","Año"],
+    ["달","dal","dal","Mes"],
+    ["주","ju","ju","Semana"],
+    ["요일","yoil","yo · il","Día de la semana"],
+    ["월요일","woryoil","wo · ryeo · il","Lunes"],
+    ["화요일","hwayoil","hwa · yoe · il","Martes"],
+    ["수요일","suyoil","su · yoe · il","Miércoles"],
+    ["목요일","mogyoil","mo · yoe · il","Jueves"],
+    ["금요일","geumyoil","geum · yoe · il","Viernes"],
+    ["토요일","toyoil","to · yoe · il","Sábado"],
+    ["일요일","iryoil","i · ryeo · il","Domingo"],
+    ["주말","jumal","ju · mal","Fin de semana"],
+    ["아침","achim","a · chim","Mañana temprano"],
+    ["점심","jeomsim","jeom · sim","Almuerzo"],
+    ["저녁","jeonyeok","jeo · nyeok","Cena"],
+    ["밤","bam","bam","Noche"],
+    ["새벽","saebyeok","sae · byeok","Madrugada"],
+    ["생일","saengil","saeng · il","Cumpleaños"],
+    ["나이","nai","na · i","Edad"],
+    ["지하","jiha","ji · ha","Suelo, metro"],
+    ["천","cheon","cheon","Mil (medida)"],
+    ["번","beon","beon","Veces"]
+  ],
+  cuerpo: [
+    ["머리","meori","meo · ri","Cabeza"],
+    ["얼굴","eolgul","eol · gul","Rostro"],
+    ["눈","nun","nun","Ojo"],
+    ["코","ko","ko","Nariz"],
+    ["입","ip","ip","Boca"],
+    ["귀","gwi","gwi","Oreja"],
+    ["손","son","son","Mano"],
+    ["발","bal","bal","Pie"],
+    ["다리","dari","da · ri","Pierna"],
+    ["팔","pal","pal","Brazo"],
+    ["가슴","gasum","ga · sum","Pecho"],
+    ["어깨","eokkae","eo · kkae","Hombro"],
+    ["무릎","mureup","mu · reup","Rodilla"],
+    ["목","mok","mok","Cuello"],
+    ["몸","mom","mom","Cuerpo"],
+    ["머리카락","meorikarak","meo · ri · ka · rak","Cabello"],
+    ["마음","maeum","mae · um","Corazón"],
+    ["목소리","mokseori","mok · seo · ri","Voz"]
+  ],
+  ropa: [
+    ["옷","ot","ot","Ropa"],
+    ["옷장","otjang","ot · jang","Armario"],
+    ["바지","baji","ba · ji","Pantalón"],
+    ["치마","chima","chi · ma","Falda"],
+    ["청바지","cheongbaji","cheong · ba · ji","Vaqueros"],
+    ["원피스","wonpiriseu","won · pi · reu","Vestido"],
+    ["코트","koteu","ko · teu","Abrigo"],
+    ["신발","sinbal","sin · bal","Zapatos"],
+    ["양말","yangmal","yang · mal","Calcetines"],
+    ["모자","moja","mo · ja","Sombrero"],
+    ["안경","angyeong","an · gyeong","Gafas"],
+    ["넥타이","nekta-i","nek · ta · i","Corbata"],
+    ["장갑","janggap","jang · gap","Guantes"],
+    ["지퍼","jipeo","ji · peo","Cremallera"]
+  ],
+  numeros: [
+    ["하나","hana","ha · na","Uno"],
+    ["둘","dul","dul","Dos"],
+    ["셋","set","set","Tres"],
+    ["넷","net","net","Cuatro"],
+    ["다섯","daseot","da · seot","Cinco"],
+    ["여섯","yeoseot","yeo · seot","Seis"],
+    ["일곱","ilgop","il · gop","Siete"],
+    ["여덟","yeodeol","yeo · deol","Ocho"],
+    ["아홉","ahop","a · hop","Nueve"],
+    ["열","yeol","yeol","Diez"],
+    ["스물","seumul","seu · mul","Veinte"],
+    ["백","baek","baek","Cien"],
+    ["만","man","man","Diez mil"],
+    ["색깔","saekkkal","saek · kkal","Color"],
+    ["빨간색","ppalgansaek","ppal · gan · saek","Rojo"],
+    ["파란색","paransaek","pa · ran · saek","Azul"],
+    ["노란색","noransaek","no · ran · saek","Amarillo"],
+    ["초록색","choroksaek","cho · rok · saek","Verde"],
+    ["검은색","geomeunsaek","geo · meun · saek","Negro"],
+    ["하얀색","hayansaek","ha · yan · saek","Blanco"],
+    ["회색","hoesae","hoe · saek","Gris"],
+    ["분홍색","bunhongsaek","bun · hong · saek","Rosa"],
+    ["주황색","juhwangsaek","ju · hwang · saek","Naranja"],
+    ["보라색","borasaek","bo · ra · saek","Morado"],
+    ["갈색","galsaek","gal · saek","Marrón"]
+  ],
+  viajes: [
+    ["여행","yeohaeng","yeo · haeng","Viaje"],
+    ["관광","gwangwang","gwang · wang","Turismo"],
+    ["호텔","hotel","ho · tel","Hotel"],
+    ["식당","sikdang","sik · dang","Restaurante"],
+    ["카페","kape","ka · pe","Cafetería"],
+    ["병원","byeogwon","byeog · won","Hospital"],
+    ["은행","eunhaeng","eun · haeng","Banco"],
+    ["시장","sijang","si · jang","Mercado"],
+    ["백화점","baekhwajeom","baek · hwa · jeom","Grandes almacenes"],
+    ["우체국","ucheguk","u · che · guk","Correos"],
+    ["공원","gongwon","gong · won","Parque"],
+    ["기차역","gichayeok","gi · cha · yeok","Estación de tren"],
+    ["공항","gonghang","gong · hang","Aeropuerto"],
+    ["버스","beoseu","beo · seu","Autobús"],
+    ["지하철","jihacheol","ji · ha · cheol","Metro"],
+    ["택시","taeksi","taek · si","Taxi"],
+    ["기차","gicha","gi · cha","Tren"],
+    ["비행기","bihaenggi","bi · haeng · gi","Avión"],
+    ["지도","jido","ji · do","Mapa"],
+    ["여권","yeogwon","yeo · gwon","Pasaporte"],
+    ["해외","haeoe","hae · oe","Extranjero"],
+    ["출발","chulbal","chul · bal","Salida, partida"],
+    ["도착","dochak","do · chak","Llegada"],
+    ["어디","eodi","eo · di","Dónde"],
+    ["무슨","museun","mu · seun","Qué"]
+  ],
+  verbos: [
+    ["가다","gada","ga · da","Ir"],
+    ["오다","oda","o · da","Venir"],
+    ["먹다","meokda","meok · da","Comer"],
+    ["마시다","masida","ma · si · da","Beber"],
+    ["자다","jada","ja · da","Dormir"],
+    ["일어나다","ireonada","i · reo · na · da","Levantarse"],
+    ["앉다","antda","an · da","Sentarse"],
+    ["보다","boda","bo · da","Ver, mirar"],
+    ["듣다","deutda","deot · da","Escuchar"],
+    ["말하다","malhada","mal · ha · da","Hablar"],
+    ["읽다","ikda","ik · da","Leer"],
+    ["쓰다","sseuda","sseu · da","Escribir"],
+    ["공부하다","gongbuhada","gong · bu · ha · da","Estudiar"],
+    ["일하다","ilhada","il · ha · da","Trabajar"],
+    ["운동하다","undonghada","un · dong · ha · da","Hacer deporte"],
+    ["놀다","nolda","nol · da","Jugar"],
+    ["사다","sada","sa · da","Comprar"],
+    ["주다","juda","ju · da","Dar"],
+    ["배우다","baeuda","bae · u · da","Aprender"],
+    ["가르치다","gareuchida","ga · reu · chi · da","Enseñar"],
+    ["알다","alda","al · da","Saber"],
+    ["모르다","moreuda","mo · reu · da","No saber"],
+    ["좋아하다","joahada","jo · a · ha · da","Gustar"],
+    ["싫어하다","sireohada","si · reo · ha · da","Odiar"],
+    ["만나다","mannada","man · na · da","Encontrarse, quedar"],
+    ["기다리다","gidarida","gi · da · ri · da","Esperar"],
+    ["열다","yeolda","yeol · da","Abrir"],
+    ["닫다","datda","dat · da","Cerrar"],
+    ["움직이다","umjugida","um · ju · gi · da","Moverse"],
+    ["살다","salda","sal · da","Vivir"],
+    ["찾다","chatda","chat · da","Buscar"],
+    ["잃어버리다","ireobeorida","i · reo · beo · ri · da","Perder"],
+    ["시작하다","sijakada","si · ja · ka · da","Empezar"],
+    ["끝나다","kkeunnada","kkeun · na · da","Terminar"],
+    ["입다","ipda","ip · da","Vestirse"],
+    ["벗다","beotda","beot · da","Quitarse"],
+    ["신다","sinda","sin · da","Ponerse (ropa)"],
+    ["웃다","utda","ut · da","Reír"],
+    ["울다","ulda","ul · da","Llorar"]
+  ],
+  adjetivos: [
+    ["좋다","jota","jo · ta","Bueno"],
+    ["나쁘다","nappeuda","nap · peu · da","Malo"],
+    ["크다","keuda","keu · da","Grande"],
+    ["작다","jakda","jak · da","Pequeño"],
+    ["많다","mana","ma · na","Mucho"],
+    ["적다","jeokda","jeok · da","Poco"],
+    ["비싸다","bissada","bis · sa · da","Caro"],
+    ["싸다","ssada","ssa · da","Barato"],
+    ["예쁘다","yeppeuda","yep · peu · da","Bonito"],
+    ["멋있다","meositda","meo · sit · da","Guapo"],
+    ["재미있다","jaemiitda","jae · mi · it · da","Interesante, divertido"],
+    ["재미없다","jaemieopda","jae · mi · eop · da","Aburrido"],
+    ["맛있다","masitda","ma · sit · da","Delicioso"],
+    ["맛없다","maeopda","mae · op · da","No sabroso"],
+    ["덥다","deopda","deop · da","Hace calor"],
+    ["춥다","chupda","chup · da","Hace frío"],
+    ["어렵다","eoryeopda","eo · ryeop · da","Difícil"],
+    ["쉽다","swipda","swip · da","Fácil"],
+    ["바쁘다","bappeuda","bap · peu · da","Ocupado"],
+    ["한가하다","hangahada","han · ga · ha · da","Tranquilo, con tiempo libre"],
+    ["길다","gilda","gil · da","Largo"],
+    ["짧다","jjalda","jjal · da","Corto"],
+    ["높다","nopda","nop · da","Alto"],
+    ["낮다","natda","nat · da","Bajo"],
+    ["아프다","apeuda","a · peu · da","Dolorido"],
+    ["괜찮다","gwaenchanta","gwaen · chan · ta","Está bien, no pasa nada"]
+  ]
+};
+
+/* ============================================================
+   Lógica
+   ============================================================ */
+
+const el = {
+  filtros:      document.getElementById("filtros"),
+  categoria:    document.getElementById("categoria"),
+  hangul:       document.getElementById("hangul"),
+  romanizacion: document.getElementById("romanizacion"),
+  silabas:      document.getElementById("silabas"),
+  traduccion:   document.getElementById("traduccion"),
+  btnNueva:     document.getElementById("btnNueva"),
+  btnTraducir:  document.getElementById("btnTraducir"),
+  btnSi:        document.getElementById("btnSi"),
+  btnNo:        document.getElementById("btnNo"),
+  evaluacion:   document.getElementById("evaluacion"),
+  aciertos:     document.getElementById("aciertos"),
+  fallos:       document.getElementById("fallos")
+};
+
+const RANGOS = Object.fromEntries(CATEGORIAS.map(c => [c[0], c[1]]));
+
+let categoriaActual = "todas";
+let bolsa = [];          // bolsa barajada de palabras
+let indice = 0;          // posición dentro de la bolsa
+let aciertos = 0;
+let fallos = 0;
+let evaluada = false;
+
+const todas = () =>
+  categoriaActual === "todas"
+    ? Object.values(PALABRAS).flat()
+    : PALABRAS[categoriaActual];
+
+function barajar(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function siguiente(){
+  const lista = todas();
+  if(lista.length === 0) return null;
+  if(indice >= bolsa.length){
+    bolsa = barajar(lista);
+    indice = 0;
+  }
+  return bolsa[indice++];
+}
+
+function pintar(palabra){
+  if(!palabra){
+    el.categoria.textContent    = "—";
+    el.hangul.textContent       = "Sin palabras";
+    el.romanizacion.textContent = "";
+    el.silabas.textContent      = "";
+    el.traduccion.hidden        = true;
+    return;
+  }
+  const [h, r, s] = palabra;
+  el.categoria.textContent    = categoriaActual === "todas" ? "Todas" : RANGOS[categoriaActual];
+  el.hangul.textContent       = h;
+  el.romanizacion.textContent = r;
+  el.silabas.textContent      = s;
+  el.traduccion.hidden        = true;
+  el.traduccion.textContent   = palabra[3];
+  evaluada = false;
+  el.btnTraducir.textContent = "Mostrar traducción";
+  el.evaluacion.hidden = true;
+}
+
+function nueva(){
+  pintar(siguiente());
+}
+
+function mostrar(){
+  if(el.traduccion.hidden){
+    el.traduccion.hidden = false;
+    el.btnTraducir.textContent = "Ocultar traducción";
+    el.evaluacion.hidden = evaluada;
+  }
+}
+
+function calificar(acierto){
+  if(evaluada) return;
+  evaluada = true;
+  if(acierto) aciertos++; else fallos++;
+  el.aciertos.textContent = aciertos;
+  el.fallos.textContent = fallos;
+  el.evaluacion.hidden = true;
+  nueva();
+}
+
+/* ---------- Filtros ---------- */
+
+function crearFiltros(){
+  const todos = document.createElement("button");
+  todos.className = "chip";
+  todos.textContent = "Todas";
+  todos.dataset.cat = "todas";
+  todos.setAttribute("aria-pressed", "true");
+  el.filtros.appendChild(todos);
+
+  CATEGORIAS.forEach(([clave, etiqueta]) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = etiqueta;
+    b.dataset.cat = clave;
+    b.setAttribute("aria-pressed", "false");
+    el.filtros.appendChild(b);
+  });
+
+  el.filtros.addEventListener("click", ev => {
+    const chip = ev.target.closest(".chip");
+    if(!chip) return;
+    categoriaActual = chip.dataset.cat;
+    el.filtros.querySelectorAll(".chip").forEach(c =>
+      c.setAttribute("aria-pressed", String(c === chip)));
+    bolsa = [];
+    indice = 0;
+    nueva();
+  });
+}
+
+/* ---------- Eventos ---------- */
+
+el.btnNueva.addEventListener("click", nueva);
+el.btnTraducir.addEventListener("click", () => {
+  if(el.traduccion.hidden) mostrar();
+  else{
+    el.traduccion.hidden = true;
+    el.btnTraducir.textContent = "Mostrar traducción";
+  }
+});
+el.btnSi.addEventListener("click", () => calificar(true));
+el.btnNo.addEventListener("click", () => calificar(false));
+
+document.addEventListener("keydown", ev => {
+  if(ev.target.closest("button, input, textarea, select, a")) return;
+  if(ev.code === "Space"){
+    ev.preventDefault();
+    nueva();
+  } else if(ev.key === "Enter"){
+    ev.preventDefault();
+    if(el.traduccion.hidden) mostrar();
+  }
+});
+
+/* ---------- Arranque ---------- */
+
+crearFiltros();
+nueva();
+</script>
+</body>
+</html>
